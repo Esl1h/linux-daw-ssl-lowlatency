@@ -79,3 +79,4 @@ Escrevi sobre todo o processo e a comparacao entre os DAWs no blog:
 - Blog: https://esli.blog
 - Panorama de DAWs no Linux: https://esli.blog/posts/daw-no-linux/
 - Ardour, Mixbus e LiveTrax na pratica: https://esli.blog/posts/daw-ardour-mixbus-e-livetrax/
+- Este setup na pratica (contrabaixo, ALSA exclusivo e latencia): https://esli.blog/posts/contrabaixo-no-linux/
