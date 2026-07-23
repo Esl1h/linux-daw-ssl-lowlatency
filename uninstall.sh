@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Remove o wrapper e os launchers instalados por install.sh.
+# Removes the wrapper and the launchers installed by install.sh.
 set -euo pipefail
 
 BIN_DIR="${XDG_BIN_HOME:-$HOME/.local/bin}"
@@ -13,4 +13,4 @@ done
 if command -v update-desktop-database >/dev/null 2>&1; then
   update-desktop-database "$APP_DIR" >/dev/null 2>&1 || true
 fi
-echo "Removido wrapper e launchers."
+echo "Removed wrapper and launchers."

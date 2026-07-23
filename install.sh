@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Instala o wrapper daw-alsa-ssl e os launchers .desktop para o usuario atual.
-# Nao requer root: usa ~/.local/bin e ~/.local/share/applications.
+# Installs the daw-alsa-ssl wrapper and the .desktop launchers for the current user.
+# No root required: uses ~/.local/bin and ~/.local/share/applications.
 set -euo pipefail
 
 SRC_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -10,10 +10,10 @@ WRAPPER="$BIN_DIR/daw-alsa-ssl"
 
 mkdir -p "$BIN_DIR" "$APP_DIR"
 
-echo "==> Instalando wrapper em $WRAPPER"
+echo "==> Installing wrapper to $WRAPPER"
 install -m 0755 "$SRC_DIR/bin/daw-alsa-ssl" "$WRAPPER"
 
-# Extrai o binario do DAW da linha Exec do template (segundo campo apos o wrapper).
+# Extract the DAW binary from the template Exec line (second field after the wrapper).
 daw_bin_of() { awk -F' ' '/^Exec=/{print $2; exit}' "$1"; }
 
 installed=0
@@ -22,12 +22,12 @@ for tpl in "$SRC_DIR"/applications/*.desktop.in; do
   base="$(basename "${tpl%.in}")"
   daw_bin="$(daw_bin_of "$tpl")"
   if [ -n "$daw_bin" ] && [ ! -x "$daw_bin" ]; then
-    echo "--  pulando $base (DAW nao encontrado: $daw_bin)"
+    echo "--  skipping $base (DAW not found: $daw_bin)"
     skipped=$((skipped+1))
     continue
   fi
   sed "s|__WRAPPER__|$WRAPPER|g" "$tpl" > "$APP_DIR/$base"
-  echo "==> Instalado launcher $base"
+  echo "==> Installed launcher $base"
   installed=$((installed+1))
 done
 
@@ -36,9 +36,9 @@ if command -v update-desktop-database >/dev/null 2>&1; then
 fi
 
 echo
-echo "Concluido: $installed launcher(s) instalado(s), $skipped pulado(s)."
+echo "Done: $installed launcher(s) installed, $skipped skipped."
 if ! printf '%s' ":$PATH:" | grep -q ":$BIN_DIR:"; then
-  echo "Aviso: $BIN_DIR nao esta no seu PATH. Adicione ao ~/.zshrc ou ~/.bashrc"
-  echo "       se quiser chamar 'daw-alsa-ssl' direto no terminal."
+  echo "Note: $BIN_DIR is not in your PATH. Add it to ~/.zshrc or ~/.bashrc"
+  echo "      if you want to call 'daw-alsa-ssl' directly from the terminal."
 fi
-echo "Interface diferente da SSL 2+ MkII? Veja DAW_ALSA_CARD no README."
+echo "Using an interface other than the SSL 2+ MkII? See DAW_ALSA_CARD in the README."
