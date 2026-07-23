@@ -8,19 +8,26 @@
 #
 # Usage:   daw-alsa-ssl /path/to/daw [args...]
 #
-# The target card is chosen by DAW_ALSA_CARD (the PipeWire device name, as
-# shown by `wpctl status` / `pw-dump`). It defaults to the SSL 2+ MkII.
-# Find yours with:  wpctl status | grep -i <your-interface>
-# or:  pw-dump | grep device.name
+# Needs wpctl (WirePlumber) and pw-dump (PipeWire), plus python3 OR jq to
+# read the PipeWire state. The target card is chosen by DAW_ALSA_CARD (the
+# PipeWire device name, as shown by `wpctl status` / `pw-dump`); it defaults
+# to the SSL 2+ MkII. Find yours with:  pw-dump | grep device.name
 #
 # Ex.: DAW_ALSA_CARD="alsa_card.usb-Focusrite..." daw-alsa-ssl /opt/REAPER/reaper
 set -uo pipefail
 
 CARD_MATCH="${DAW_ALSA_CARD:-alsa_card.usb-Solid_State_Logic_SSL_2__Mk_II-00}"
 
-# Find the PipeWire device id and its active profile, matching by name.
+# Print "<device-id> <active-profile-index>" for the card whose PipeWire
+# device.name matches CARD_MATCH, or nothing if it cannot be found. Prefers
+# python3 (stdlib json) and falls back to jq; either one only reads the JSON.
 read_dev() {
-  pw-dump 2>/dev/null | python3 - "$CARD_MATCH" <<'PY'
+  local dump
+  dump="$(pw-dump 2>/dev/null)" || return 0
+  [ -n "$dump" ] || return 0
+
+  if command -v python3 >/dev/null 2>&1; then
+    printf '%s' "$dump" | python3 -c '
 import json, sys
 match = sys.argv[1]
 try:
@@ -37,7 +44,16 @@ for o in data:
                 idx = p["index"]
         print(o.get("id"), idx)
         break
-PY
+' "$CARD_MATCH"
+  elif command -v jq >/dev/null 2>&1; then
+    printf '%s' "$dump" | jq -r --arg m "$CARD_MATCH" '
+      [ .[] | select(.info.props."device.name" == $m) ] as $x
+      | if ($x | length) == 0 then empty
+        else $x[0] as $o
+          | (($o.info.params.Profile // []) | map(.index) | last) as $idx
+          | "\($o.id) \(if $idx == null then 1 else $idx end)"
+        end'
+  fi
 }
 
 if [ "$#" -eq 0 ]; then
@@ -60,8 +76,8 @@ if [ -n "${DEV_ID:-}" ] && command -v wpctl >/dev/null 2>&1; then
   wpctl set-profile "$DEV_ID" 0 >/dev/null 2>&1  # 0 = off -> frees the hw for ALSA
   sleep 0.4
 else
-  echo "daw-alsa-ssl: interface '$CARD_MATCH' not found in PipeWire;" \
-       "launching the DAW anyway." >&2
+  echo "daw-alsa-ssl: interface '$CARD_MATCH' not found in PipeWire" \
+       "(needs wpctl, and python3 or jq); launching the DAW anyway." >&2
 fi
 
 "$@"
