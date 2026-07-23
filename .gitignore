@@ -1,0 +1,4 @@
+# nada de artefatos locais
+*.swp
+*~
+.DS_Store
