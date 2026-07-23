@@ -1,23 +1,24 @@
 #!/usr/bin/env bash
-# daw-alsa-ssl - Estrategia A (ALSA exclusivo) para DAWs sob PipeWire.
+# daw-alsa-ssl - exclusive ALSA access for DAWs running under PipeWire.
 #
-# Libera a interface de audio do PipeWire (perfil "off"), abre o DAW em
-# ALSA exclusivo com a menor latencia possivel e devolve a placa ao
-# PipeWire quando o DAW fecha (para o navegador/streaming voltarem a tocar).
+# Frees the audio interface from PipeWire (profile "off"), opens the DAW
+# with exclusive ALSA access at the lowest possible latency, and hands the
+# card back to PipeWire when the DAW quits (so the browser/streaming can
+# play through it again).
 #
-# Uso:   daw-alsa-ssl /caminho/do/daw [args...]
+# Usage:   daw-alsa-ssl /path/to/daw [args...]
 #
-# A placa alvo e escolhida por DAW_ALSA_CARD (nome do device no PipeWire,
-# como aparece em `wpctl status` / `pw-dump`). O padrao e a SSL 2+ MkII.
-# Descubra o nome da sua com:  wpctl status | grep -i <sua-interface>
-# ou:  pw-dump | grep device.name
+# The target card is chosen by DAW_ALSA_CARD (the PipeWire device name, as
+# shown by `wpctl status` / `pw-dump`). It defaults to the SSL 2+ MkII.
+# Find yours with:  wpctl status | grep -i <your-interface>
+# or:  pw-dump | grep device.name
 #
 # Ex.: DAW_ALSA_CARD="alsa_card.usb-Focusrite..." daw-alsa-ssl /opt/REAPER/reaper
 set -uo pipefail
 
 CARD_MATCH="${DAW_ALSA_CARD:-alsa_card.usb-Solid_State_Logic_SSL_2__Mk_II-00}"
 
-# Descobre o id do device no PipeWire e o perfil ativo, casando pelo nome.
+# Find the PipeWire device id and its active profile, matching by name.
 read_dev() {
   pw-dump 2>/dev/null | python3 - "$CARD_MATCH" <<'PY'
 import json, sys
@@ -30,7 +31,7 @@ for o in data:
     info = o.get("info") or {}
     props = info.get("props") or {}
     if props.get("device.name") == match:
-        idx = 1  # fallback razoavel: perfil ativo padrao
+        idx = 1  # sensible fallback: default active profile
         for p in (info.get("params") or {}).get("Profile", []):
             if p.get("index") is not None:
                 idx = p["index"]
@@ -40,7 +41,7 @@ PY
 }
 
 if [ "$#" -eq 0 ]; then
-  echo "uso: daw-alsa-ssl /caminho/do/daw [args...]" >&2
+  echo "usage: daw-alsa-ssl /path/to/daw [args...]" >&2
   exit 2
 fi
 
@@ -56,11 +57,11 @@ restore() {
 trap restore EXIT INT TERM
 
 if [ -n "${DEV_ID:-}" ] && command -v wpctl >/dev/null 2>&1; then
-  wpctl set-profile "$DEV_ID" 0 >/dev/null 2>&1  # 0 = off -> hw livre para o ALSA
+  wpctl set-profile "$DEV_ID" 0 >/dev/null 2>&1  # 0 = off -> frees the hw for ALSA
   sleep 0.4
 else
-  echo "daw-alsa-ssl: interface '$CARD_MATCH' nao encontrada no PipeWire;" \
-       "abrindo o DAW mesmo assim." >&2
+  echo "daw-alsa-ssl: interface '$CARD_MATCH' not found in PipeWire;" \
+       "launching the DAW anyway." >&2
 fi
 
 "$@"
