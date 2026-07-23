@@ -1,0 +1,13 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=Ardour 9 (SSL · ALSA)
+GenericName=Digital Audio Workstation
+Comment=Ardour em ALSA exclusivo na interface (Estrategia A)
+Exec=__WRAPPER__ /usr/bin/ardour9 %F
+Icon=ardour9
+Terminal=false
+StartupNotify=true
+Categories=AudioVideo;AudioVideoEditing;Audio;Recorder;
+MimeType=application/x-ardour;
+Keywords=daw;baixo;bass;gravacao;alsa;ssl;

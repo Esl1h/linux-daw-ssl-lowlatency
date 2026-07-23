@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=Mixbus 11 (SSL · ALSA)
+GenericName=Digital Audio Workstation
+Comment=Mixbus 11 em ALSA exclusivo na interface (Estrategia A)
+Exec=__WRAPPER__ /usr/local/bin/Mixbus11 %F
+Icon=Harrison-Mixbus_11.1.71
+Terminal=false
+StartupNotify=true
+Categories=AudioVideo;AudioVideoEditing;Audio;Recorder;
+Keywords=daw;baixo;bass;gravacao;mixagem;alsa;ssl;harrison;
