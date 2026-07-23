@@ -24,8 +24,8 @@ While the DAW is open, no sound comes out of the browser through the interface. 
 ## Requirements
 
 - PipeWire with WirePlumber (`wpctl`) and the `pw-dump` tools.
-- `python3` (used only to read PipeWire state as JSON).
-- One or more DAWs installed: Ardour, Mixbus 11/12, LiveTrax 3, REAPER.
+- `python3` or `jq`, either one, used only to read the PipeWire state as JSON. The wrapper prefers `python3` (part of the base install on most distros) and falls back to `jq` when `python3` is absent.
+- The DAWs must already be installed. This project does not install Ardour, Mixbus, LiveTrax or REAPER; it only creates launchers for the ones it finds on your system (Ardour at `/usr/bin/ardour9`, Mixbus at `/usr/local/bin/Mixbus11` or `Mixbus12`, LiveTrax at `/usr/local/bin/LiveTrax3`, REAPER at `/opt/REAPER/reaper`).
 
 ## Install
 
